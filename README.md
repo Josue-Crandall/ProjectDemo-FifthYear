@@ -35,7 +35,6 @@ This README.md hopes to give a brief summary of the design considerations that w
 into the development of this chat system.\
 \
 Then a short description of related tools used with the chat system.\
-\
 
 <a name="2"></a>
 ### Transport
@@ -43,17 +42,17 @@ Then a short description of related tools used with the chat system.\
 Since the goal of the project is to leak as little information to the network as possible\
 the choice of transport and constraints on what is allowed to touch the network are critical.\
 \
-Constraints:\
+Constraints:
 1) All network connections and packets are over tor onion service\
 2) All network packet payloads are indistinguishable from CPRNG output \
 3) All network packet payloads are of a fixed size\
 \
-Allowances:\
+\
+Allowances:
 1) Only so much can be done to efficiently hide total network traffic, no such attempt is made here.\
 2) The system does not define what other processess on the same computer system do with the network.\
    // Prior iterations were intended to be used in isolation with whonix, or specific configurations of openBSD.\
    // It was found that it was practically inconvenient and users were finding insecure workarounds.\
-\
 
 <a name="3"></a>
 ### Server
@@ -64,7 +63,6 @@ As such the server does itself provide a layer of security if not compromised vi
 \
 The server is strictly intended to transport messages, it does not directly handle business logic related to the clients chatting.\
 The server keeps message logs, splits users into broadcast channels.\
-\
 
 <a name="4"></a>
 ### Server Protocol
@@ -79,7 +77,6 @@ Then the new symmetric keys are used as ratcheting keys.\
  // In essence this destroys the keys, meaning an eve's dropper who is recorded network traffic cannot\
  // find a way to decrypt the messages by breaking into the server or client afterwards.\
  // And because the hash is deterministic, both server and client still have a shared secret.\
-\
 
 <a name="5"></a>
 ### Client
@@ -91,7 +88,6 @@ consitute the state of the chat program decoupling it pretty heavily from the UI
 \
 The encryption proxy has three end to end encrypting modes that it can perform, and it can\
 perform any number of them at the same time depending on configuration.\
-\
 
 <a name="6"></a>
 ### Client Protocols
@@ -121,7 +117,6 @@ the key state.\
 One Time Padding uses the one time pad wrapped in ratcheting symmetric encryption.\
    // The purpose of this protocol is increased security at the expense of awkward key management and performance.\
    // OTP is however information theoretically secure.\
-\
 
 <a name="7"></a>
 ### cTools
@@ -133,7 +128,6 @@ Generation of symmetric keys, asymmetric keys, double ratcheting keys, one time 
 Encryption and decryption of the above.\
 \
 All output is in base64 (or whatever format you fed it in the first place in the case of decryption).\
-\
 
 <a name="8"></a>
 ### Misc
@@ -146,6 +140,5 @@ Convenient for bootstrapping. Not clean was scavenged from other projects quickl
 \
 BrowserBasedChat distinct UI and chat logic plugs into the standard encryption proxy. Forces one to trust browser implementation,\
 but is nicer as an experience UI wise. Not clean was scavenged from other projects quickly.\
-\
 
 [to top](#top)
