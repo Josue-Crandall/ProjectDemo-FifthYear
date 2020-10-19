@@ -1,4 +1,8 @@
-## Note spell check later - I do not know what needs explaining anymore
+## Note spell check later
+## I do not know what needs explaining anymore, seek review
+## Add pictures
+## Add game video demo
+
 
 # ProjectDemo-FourthYear
 
