@@ -126,7 +126,7 @@ Base 64 encoding / decoding.\
 Generation of symmetric keys, asymmetric keys, double ratcheting keys, one time padding keys.\
 Encryption and decryption of the above.\
 \
-All output is in base64 (or whatever format you fed it in the first place in the case of decryption).
+All output is in base64 (or whatever format you fed it in the first place in the case of decryption/decoding).
 
 <a name="8"></a>
 ### Misc
