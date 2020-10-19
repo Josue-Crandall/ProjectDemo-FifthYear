@@ -46,7 +46,7 @@ Constraints:
 1) All network connections and packets are over tor onion service
 2) All network packet payloads are indistinguishable from CPRNG output
 3) All network packet payloads are of a fixed size\
-\
+
 Allowances:
 1) Only so much can be done to efficiently hide total network traffic, no such attempt is made here.
 2) The system does not define what other processess on the same computer system do with the network.\
