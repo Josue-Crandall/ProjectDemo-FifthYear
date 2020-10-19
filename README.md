@@ -125,6 +125,7 @@ CTools is a command line interface and a GUI frontend which performs mundane cry
 Base 64 encoding / decoding.\
 Generation of symmetric keys, asymmetric keys, double ratcheting keys, one time padding keys.\
 Encryption and decryption of the above.\
+Hashing, hash verification\
 \
 All output is in base64 (or whatever format you fed it in the first place in the case of decryption/decoding).
 
