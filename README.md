@@ -3,7 +3,7 @@
 # ProjectDemo-FourthYear
 
 <a name="top"></a>
-# Example project.
+# Alice v.07
 
 This project is a chat client and server designed with the goal of 
 leaking as little information as practical.
