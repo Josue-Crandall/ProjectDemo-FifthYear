@@ -5,18 +5,18 @@
 <a name="top"></a>
 # Alice v.07
 
-This project is a chat client and server designed with the goal of 
-leaking as little information as practical.
-
-This project has had many iterations. It ran the gambit from discord self-botting with a
-javafx GUI, javascript/nodejs web deployments on AWS with whonix VM frontends, 
-to openBSD only iterations with an ncurses tui.
-
-This iteration has been an exploration of the C programming language, and 
-of posix operating systems. As such many of the design chocies were made purely as
-an opportunity to explore various styles of programming.
-
-Note: This is a students learning project, please don't take anything I do here as secure.
+This project is a chat client and server designed with the goal of \
+leaking as little information as practical.\
+\
+This project has had many iterations. It ran the gambit from discord self-botting with a\
+javafx GUI, javascript/nodejs web deployments on AWS with whonix VM frontends, \
+to openBSD only iterations with an ncurses tui.\
+\
+This iteration has been an exploration of the C programming language, and \
+of posix operating systems. As such many of the design chocies were made purely as\
+an opportunity to explore various styles of programming.\
+\
+Note: This is a students learning project, please don't take anything I do here as secure.\
 
 # Table of contents
 
@@ -34,7 +34,7 @@ Note: This is a students learning project, please don't take anything I do here 
 This README.md hopes to give a brief summary of the design considerations that went\
 into the development of this chat system.\
 \
-Then a short description of related tools used with the chat system.\
+Then a short description of related tools used with the chat system.
 
 <a name="2"></a>
 ### Transport
@@ -43,16 +43,15 @@ Since the goal of the project is to leak as little information to the network as
 the choice of transport and constraints on what is allowed to touch the network are critical.\
 \
 Constraints:
-1) All network connections and packets are over tor onion service\
-2) All network packet payloads are indistinguishable from CPRNG output \
+1) All network connections and packets are over tor onion service
+2) All network packet payloads are indistinguishable from CPRNG output
 3) All network packet payloads are of a fixed size\
 \
-\
 Allowances:
-1) Only so much can be done to efficiently hide total network traffic, no such attempt is made here.\
+1) Only so much can be done to efficiently hide total network traffic, no such attempt is made here.
 2) The system does not define what other processess on the same computer system do with the network.\
    // Prior iterations were intended to be used in isolation with whonix, or specific configurations of openBSD.\
-   // It was found that it was practically inconvenient and users were finding insecure workarounds.\
+   // It was found that it was practically inconvenient and users were finding insecure workarounds.
 
 <a name="3"></a>
 ### Server
@@ -62,7 +61,7 @@ Clients and the server may only communicate via [transport](#2) and [server prot
 As such the server does itself provide a layer of security if not compromised via the server protocol.\
 \
 The server is strictly intended to transport messages, it does not directly handle business logic related to the clients chatting.\
-The server keeps message logs, splits users into broadcast channels.\
+The server keeps message logs, splits users into broadcast channels.
 
 <a name="4"></a>
 ### Server Protocol
@@ -76,7 +75,7 @@ Then the new symmetric keys are used as ratcheting keys.\
  // Ratcheting in this context meaning the keys are one way hashed after each message sent.\
  // In essence this destroys the keys, meaning an eve's dropper who is recorded network traffic cannot\
  // find a way to decrypt the messages by breaking into the server or client afterwards.\
- // And because the hash is deterministic, both server and client still have a shared secret.\
+ // And because the hash is deterministic, both server and client still have a shared secret.
 
 <a name="5"></a>
 ### Client
@@ -87,7 +86,7 @@ A pecularity with the chat logic implementation is that it maintains files at ru
 consitute the state of the chat program decoupling it pretty heavily from the UI.\
 \
 The encryption proxy has three end to end encrypting modes that it can perform, and it can\
-perform any number of them at the same time depending on configuration.\
+perform any number of them at the same time depending on configuration.
 
 <a name="6"></a>
 ### Client Protocols
@@ -112,11 +111,11 @@ the key state.\
    // The key mixing is also one way, if Mallory records our communications, then later steals K3, she can't\
    // go back and read what we had said using K1.\
    //\
-   // Signal does a more robust version of this protocol: https://signal.org/docs/specifications/doubleratchet/\
+   // Signal does a more robust version of this protocol: https://signal.org/docs/specifications/doubleratchet/ \
 \
 One Time Padding uses the one time pad wrapped in ratcheting symmetric encryption.\
    // The purpose of this protocol is increased security at the expense of awkward key management and performance.\
-   // OTP is however information theoretically secure.\
+   // OTP is however information theoretically secure.
 
 <a name="7"></a>
 ### cTools
@@ -127,7 +126,7 @@ Base 64 encoding / decoding.\
 Generation of symmetric keys, asymmetric keys, double ratcheting keys, one time padding keys.\
 Encryption and decryption of the above.\
 \
-All output is in base64 (or whatever format you fed it in the first place in the case of decryption).\
+All output is in base64 (or whatever format you fed it in the first place in the case of decryption).
 
 <a name="8"></a>
 ### Misc
@@ -139,6 +138,6 @@ FileTransferServer simple node-express webserver with a chat program in it (simp
 Convenient for bootstrapping. Not clean was scavenged from other projects quickly.\
 \
 BrowserBasedChat distinct UI and chat logic plugs into the standard encryption proxy. Forces one to trust browser implementation,\
-but is nicer as an experience UI wise. Not clean was scavenged from other projects quickly.\
+but is nicer as an experience UI wise. Not clean was scavenged from other projects quickly.
 
 [to top](#top)
