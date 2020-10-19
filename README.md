@@ -58,7 +58,7 @@ Allowances:
 
 The server in this design is assumed compromised.\
 Clients and the server may only communicate via [transport](#2) and [server protocol](#4) restrictions.\
-As such the server does itself provide a layer of security if not compromised via the server protocol.\
+However the server does itself provide a layer of security if not compromised via the server protocol.\
 \
 The server is strictly intended to transport messages, it does not directly handle business logic related to the clients chatting.\
 The server keeps message logs, splits users into broadcast channels.
