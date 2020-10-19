@@ -16,7 +16,7 @@ This iteration has been an exploration of the C programming language, and \
 of posix operating systems. As such many of the design chocies were made purely as\
 an opportunity to explore various styles of programming.\
 \
-Note: This is a students learning project, please don't take anything I do here as secure.
+Note: This is a student's learning project, please don't take anything I do here as secure.
 
 # Table of contents
 
