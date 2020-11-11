@@ -1,0 +1,8 @@
+.SILENT:
+
+#-pedantic
+
+CC=clang
+DEBUG_FLAGS=-D JC_DEBUG  -Wextra -g -O3 -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer
+THREAD_FLAGS=-D JC_DEBUG -Wextra -g -O3 -fsanitize=thread
+PROD_FLAGS=-lpthread -lnacl -O3 -Wextra ## don't forget to strip

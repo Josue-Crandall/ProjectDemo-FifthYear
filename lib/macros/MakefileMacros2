@@ -1,0 +1,13 @@
+test:
+	${CC} ${DEBUG_FLAGS} ${LIBS} ${NAME}.c ${LINKS} -o test_${NAME}.elf
+	./test_${NAME}.elf
+	rm test_${NAME}.elf
+
+thread:
+	${CC} ${THREAD_FLAGS} ${LIBS} ${NAME}.c ${LINKS} -o ${NAME}_test.elf
+	./test_${NAME}.elf
+	rm test_${NAME}.elf
+
+prod:
+	${CC} -O3 -static ${LIBS} ${NAME}.c ${LINKS} -o ${NAME}.elf
+	strip --strip-all ${NAME}.elf

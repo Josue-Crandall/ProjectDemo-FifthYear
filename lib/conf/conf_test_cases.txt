@@ -1,0 +1,40 @@
+    #  comment thing
+
+"test1"="thing"
+"test2" ="thing"
+"test3"= "thing" #testing!
+      "test4"     ="thing"
+   "test5" =     "thing not"
+
+  "test6"= "thing" ###
+
+# line breaks inside entries
+"tes
+ta"
+
+=
+
+"testa comple
+ted"
+
+
+                            ###          
+#test comment2
+###
+#    "testx"   = "thing" # comment thing
+#    "testx"   = # comment thing
+"test7"=""  
+""="test empty key"
+"ztest9"="thing" "ztest10"="thing" # "test11z"="FAILED_TEST"
+"ztest11"="thing"#"test11z"="FAILED_TEST"
+"test10zzz"="=Abx3wz"
+"test11" = "=Abx3wz2"
+"=test12" = "woo"
+"test13"="\thing"
+"test14"="/thing"
+"test15"="thing="
+"test16"="thing/"
+"test17"="thing\\="
+"test18"="thing\\="
+"test19=thing"= "x"  #note: this file should not end in a new line char as part of testing
+"test100"="no_new_line"
