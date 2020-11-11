@@ -68,7 +68,7 @@ The system only gives the server a few pieces of information that the untrusted 
 It knows client channel IDs, client message lengths (rather than raw network traffic size), and which messages are to be logged. \
 This is accomplished by having the server handle no business logic, but instead act as a channel-based broadcasting server. \
 \
-   // The first iterations had no information about users that the network did not already have. \ 
+   // The first iterations had no information about users that the network did not already have. \
    // The problem was that the server could not distuinguish clients, leading to O(n^2) broadcasts. \
    // Given the number of clients, this was fine. However, when using the server to double as a video game server, \
    // the overhead was prohibitive. So the trade-off was made to let the server know channels. \
