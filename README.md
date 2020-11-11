@@ -35,7 +35,7 @@ Note: This is a student's learning project, please don't take anything I do here
 This README.md hopes to give a brief summary of the design considerations that went\
 into the development of this chat system and to provide a short description of associated tools.
 
-Example frontend: \
+Example frontend: 
 
 
 ![alt text](1.png "Example image of a GUI interface to the chat system. Shows login example.")
