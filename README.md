@@ -36,7 +36,7 @@ This README.md hopes to give a brief summary of the design considerations that w
 into the development of this chat system and to provide a short description of associated tools.
 
 Example frontend:
-![alt text](/images/ex.png "Example image of a GUI interface to the chat system")
+![alt text](ex.png "Example image of a GUI interface to the chat system")
 
 <a name="2"></a>
 ### Transport
