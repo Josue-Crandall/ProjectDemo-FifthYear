@@ -1,13 +1,10 @@
 ## TODO:
-## Add pictures
 ## Add game video demo
-## (Liscence?) and upload code
-
 
 # ProjectDemo-FourthYear
 
 <a name="top"></a>
-# Alice v.07
+# Alice v.08
 
 This project is a chat client and server designed with the goal of \
 leaking as little information as practical.\
@@ -37,6 +34,9 @@ Note: This is a student's learning project, please don't take anything I do here
 ## Introduction
 This README.md hopes to give a brief summary of the design considerations that went\
 into the development of this chat system and to provide a short description of associated tools.
+
+Example frontend:
+![alt text](/images/ex.png "Example image of a GUI interface to the chat system")
 
 <a name="2"></a>
 ### Transport
