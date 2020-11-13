@@ -153,4 +153,9 @@ It is convenient for bootstrapping. The project is not clean because it was scav
 BrowserBasedChat is a distinct UI and chat logic that plugs into the standard encryption proxy. It forces the user to trust their browser,\
 but is nicer as an experience UI-wise. It is not clean because it was scavenged from other projects quickly.
 
+Video game prototyping project. Was a first foray into editing sounds and visuals. \
+Was useful to get to toy with various card game designs and how they played quickly. \
+\
+[![PrototypeVideo](https://res.cloudinary.com/marcomontalbano/image/upload/v1605244785/video_to_markdown/images/youtube--DRRXRwrU8sc-c05b58ac6eb4c4700831b2b3070cd403.jpg)](https://www.youtube.com/watch?v=DRRXRwrU8sc "PrototypeVideo")
+
 [to top](#top)
