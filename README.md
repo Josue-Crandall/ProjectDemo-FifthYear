@@ -152,10 +152,10 @@ but is nicer as an experience UI-wise. It is not clean as it was scavenged from 
 
 [to top](#top)
 
-### Easter egg
+# Card Game Protoype
 
 Unrelated to Alice v.08. One weekend I had some ideas how card game design that I wanted to test. \
-This little project was the result. It's a browser based game using only basic html/css/js. \
+This little project was the result. It's a multiplayer browser based game using only basic html/css/js. \
 \
 [![PrototypeVideo](https://res.cloudinary.com/marcomontalbano/image/upload/v1605244785/video_to_markdown/images/youtube--DRRXRwrU8sc-c05b58ac6eb4c4700831b2b3070cd403.jpg)](https://www.youtube.com/watch?v=DRRXRwrU8sc "PrototypeVideo")
 
