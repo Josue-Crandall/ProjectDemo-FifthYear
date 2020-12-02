@@ -19,21 +19,24 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-int main(void) {
+#include <stdio.h>
+
+volatile PMutex x;
+
+int main(void) {    
     Ret test0(); CHECK(test0());
     Ret test1(); CHECK(test1());
-
-    printf("--- PASSING ---\n");
+    // printf("--- PASSING ---\n");
     return 0;
 FAILED:
-    printf("--- FAILED ---\n");
+    //printf("--- FAILED ---\n");
     return 0;
 }
 
 Ret test0() {
     static char* HW_ARGS[1] = {NULL};
     for(int i = 0; i < 3; ++i) {
-        CHECK(forkedExec("./HW.elf", HW_ARGS, NULL));
+        NEG_CHECK(forkedExec("./HW.elf", HW_ARGS, NULL));
     }
     sleep(1);
 
@@ -85,3 +88,49 @@ FAILED:
     err = -1;
     goto CLEAN;
 }
+
+
+
+/*
+// Bad POnce / PLocal test
+static POnce once = PONCE_STATIC_INIT;
+static PLocal local;
+
+void initLocal(void) { 
+    printf("Were initializing local :D\n");
+    PLocalInit(&local); 
+}
+
+void *task(void *thing) {
+    thing = thing;
+    POnceDo(&once, initLocal);
+    int *val;
+    while(0 == (val = PLocalGet(&local))) {
+        int *x = stdMalloc(1, sizeof(int));
+        CHECK(!x);
+        *x = (int)thing;
+        CHECK(PLocalSet(&local, x));
+    }
+
+    while(*val) {
+        printf("Got %d\n", *val);
+        sleep(1);
+        --*val;
+    }
+    printf("0!\n");
+
+FAILED:
+    return 0;
+}
+
+int main(void) {
+    CHECK(PThreadInit(NULL, task, (void *)5));
+    CHECK(PThreadInit(NULL, task, (void *)4));
+    CHECK(PThreadInit(NULL, task, (void *)7));
+    CHECK(PThreadInit(NULL, task, (void *)8));    
+    sleep(10);
+FAILED:
+    return 0;
+}
+
+*/

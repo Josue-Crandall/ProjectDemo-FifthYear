@@ -13,8 +13,6 @@
     GNU General Public License for more details.
 */
 
-#include "arc.h"
-
 #include "../macros/macros.h"
 
 #include <stdio.h>
@@ -22,6 +20,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
+
+#include "arc.h"
+
 
 int main(void) {
     printf("Testing: arc.h ... ");

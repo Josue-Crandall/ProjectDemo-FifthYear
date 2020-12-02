@@ -64,7 +64,7 @@ static void * qRunner(void *arg) {
     PTask **task;
 
     while( (task = CTaskVecPop(&que->tasks))) {
-        DEBUG_LOG("WorkQ worker spin.\n");
+        //DEBUG_LOG("WorkQ worker spin.\n");
         Ret res = (*task)->cb(task);
         if(res < 0) { WorkQStop(que); goto DONE; }
         else if(PTASK_RET_DONE == res) { PTaskDe(task); }

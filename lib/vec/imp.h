@@ -1,5 +1,5 @@
 /*
-	Alice v.08 a chat client and server.
+	CC v.01 a language project.
 	Copyright (C) 2020 Josue Crandall
 
     This program is free software: you can redistribute it and/or modify
@@ -13,98 +13,66 @@
     GNU General Public License for more details.
 */
 
-#define VEC_DEFAULT_CAPACITY    16
-static_assert(VEC_DEFAULT_CAPACITY > 0, "Required for grow logic.");
+#include "../array/array.h"
 
+#include <string.h>
 
 #define DEF_VEC(NAME, VAL_T, VAL_DE, ALLOC)                                     \
+                                                                                \
+DEF_ARRAY(NAME##Arr, VAL_T, ALLOC);                                             \
 static void NAME##ValDe(VAL_T val) { val = val; { VAL_DE; } }                   \
-static VAL_T* NAME##Data(NAME *vec) { return vec->data; }                       \
-static void NAME##SetSize(NAME *vec, usize newLen) { vec->len = newLen; }       \
-static usize NAME##Size(NAME *vec) { return vec->len; }                         \
-static Ret NAME##Alive(NAME *vec) { return vec->data ? 1 : 0; }                 \
+                                                                                \
 static Ret NAME##Init(NAME *vec, usize cap) {                                   \
-    if(0 == cap) { cap = VEC_DEFAULT_CAPACITY; }                                \
-    POW2_ROUND(cap, usize);                                                     \
-                                                                                \
-    NULL_CHECK(vec->data = ALLOC##Malloc(cap, sizeof(VAL_T)));                  \
+    CHECK(NAME##ArrInit(&vec->arr, cap));                                       \
     vec->len = 0;                                                               \
-    vec->cap = cap;                                                             \
-                                                                                \
     return 0;                                                                   \
 FAILED:                                                                         \
     return -1;                                                                  \
 }                                                                               \
-static NAME##Gen NAME##Beg(NAME *vec) {                                         \
-    NAME##Gen val = { vec->data - 1, vec->data + vec->len };                    \
-    return val;                                                                 \
-}                                                                               \
-static Ret NAME##Next(NAME##Gen *gen) { return ++gen->val != gen->end; }        \
-static void NAME##De(NAME *vec) {                                               \
-    if(vec->data) {                                                             \
-        for(NAME##Gen gen = NAME##Beg(vec); NAME##Next(&gen); NOP) {            \
-            NAME##ValDe(*gen.val);                                              \
-        }                                                                       \
-        ALLOC##Free(vec->data, vec->cap * sizeof(VAL_T));                       \
-    }                                                                           \
-}                                                                               \
-static void NAME##Clear(NAME *vec) {                                            \
-    for(NAME##Gen gen = NAME##Beg(vec); NAME##Next(&gen); NOP) {                \
-        NAME##ValDe(*gen.val);                                                  \
-    }                                                                           \
-    vec->len = 0;                                                               \
-}                                                                               \
-static Ret NAME##Reserve(NAME *vec, usize amt) {                                \
-    if(amt > vec->cap) {                                                        \
-        usize newCap = vec->cap;                                                \
-        do { UNSIGNED_LSHIFT_CHECK(newCap, usize); } while(newCap < amt);       \
-                                                                                \
-        CHECK(ALLOC##Realloc((void **)&vec->data, vec->cap * sizeof(VAL_T), newCap, sizeof(VAL_T))); \
-        vec->cap = newCap;                                                      \
-    }                                                                           \
-    return 0;                                                                   \
-FAILED:                                                                         \
-    return -1;                                                                  \
-}                                                                               \
-static Ret NAME##Grow(NAME *vec, usize amt) {                                   \
+static Ret NAME##Reserve(NAME *vec, usize amt) { return NAME##ArrReserve(&vec->arr, amt); } \
+static Ret NAME##GrowImp(NAME *vec, usize amt) {                                \
     usize newLen = vec->len;                                                    \
     ADD_CHECK(newLen, amt, SIZE_MAX);                                           \
-    if(newLen > vec->cap) { CHECK(NAME##Reserve(vec, newLen)); }                \
+    CHECK(NAME##ArrReserve(&vec->arr, newLen));                                 \
     vec->len = newLen;                                                          \
     return 0;                                                                   \
 FAILED:                                                                         \
     return -1;                                                                  \
 }                                                                               \
-static Ret NAME##PushArr(NAME *vec, VAL_T *data, usize amt) {                   \
-    CHECK(NAME##Grow(vec, amt));                                                \
-    memcpy(vec->data + vec->len - amt, data, sizeof(VAL_T) * amt);              \
+static Ret NAME##PushArr(NAME *vec, VAL_T *data, usize len) {                   \
+    CHECK(NAME##GrowImp(vec, len));                                             \
+    memcpy(NAME##Data(vec) + vec->len - len, data, sizeof(VAL_T) * len);        \
     return 0;                                                                   \
 FAILED:                                                                         \
     return -1;                                                                  \
 }                                                                               \
 static Ret NAME##Push(NAME *vec, VAL_T val) {                                   \
-    CHECK(NAME##Grow(vec, 1));                                                  \
-    vec->data[vec->len - 1] = val;                                              \
+    CHECK(NAME##GrowImp(vec, 1));                                               \
+    NAME##Data(vec)[vec->len - 1] = val;                                        \
     return 0;                                                                   \
 FAILED:                                                                         \
     return -1;                                                                  \
 }                                                                               \
 static VAL_T NAME##Pop(NAME *vec) {                                             \
     if(0 == vec->len) { RAI(VAL_T, res); return res; }                          \
-    return vec->data[--vec->len];                                               \
+    return NAME##Data(vec)[--vec->len];                                         \
 }                                                                               \
-static usize NAME##Rm(NAME *vec, usize start, usize finish, void *ppred) {      \
-    VAL_T *iter = vec->data + start;                                            \
-    VAL_T *end = vec->data + finish;                                            \
-    NAME##Pred *pred = ppred;                                                   \
+static usize NAME##Rm(NAME *vec, usize start, usize finish, NAME##Pred *pred) { \
+    assert(start <= NAME##Size(vec));                                           \
+    assert(finish <= NAME##Size(vec));                                          \
+                                                                                \
+    VAL_T *iter = NAME##Data(vec) + start;                                      \
+    VAL_T *end = NAME##Data(vec) + finish;                                      \
                                                                                 \
     for(NOP; iter != end; ++iter) {                                             \
-        if(pred->cb(pred, iter)) { NAME##ValDe(*iter); break; }                 \
+        if((*pred)(pred, iter)) { NAME##ValDe(*iter); break; }                  \
     }                                                                           \
+                                                                                \
     VAL_T * newEnd = iter;                                                      \
+                                                                                \
     if(iter != end) {                                                           \
         while(++iter != end) {                                                  \
-            if(pred->cb(pred, iter)) { NAME##ValDe(*iter); }                    \
+            if((*pred)(pred, iter)) { NAME##ValDe(*iter); }                     \
             else { *newEnd++ = *iter; }                                         \
         }                                                                       \
     }                                                                           \
@@ -112,4 +80,22 @@ static usize NAME##Rm(NAME *vec, usize start, usize finish, void *ppred) {      
     usize count = end - newEnd;                                                 \
     vec->len -= count;                                                          \
     return count;                                                               \
+}                                                                               \
+                                                                                \
+static VAL_T *NAME##Data(NAME *vec) { return NAME##ArrData(&vec->arr); }        \
+static void NAME##SetSize(NAME *vec, usize newLen) { vec->len = newLen; }       \
+static usize NAME##Size(NAME *vec) { return vec->len; }                         \
+                                                                                \
+static void NAME##Clear(NAME *vec) {                                            \
+    VAL_T *iter = NAME##Data(vec);                                              \
+    VAL_T *end = iter + NAME##Size(vec);                                        \
+    for(NOP; iter != end; ++iter) { NAME##ValDe(*iter); }                       \
+    vec->len = 0;                                                               \
+}                                                                               \
+static Ret NAME##Alive(NAME *vec) { return NAME##ArrAlive(&vec->arr); }         \
+static void NAME##De(NAME *vec) {                                               \
+    if(NAME##Alive(vec)) {                                                      \
+        NAME##Clear(vec);                                                       \
+        NAME##ArrDe(&vec->arr);                                                 \
+    }                                                                           \
 }                                                                               \

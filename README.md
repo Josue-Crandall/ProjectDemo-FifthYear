@@ -25,7 +25,6 @@ Note: This is a student's learning project, please don't take anything I do here
 5. [Client](#5)
 6. [Client Protocols](#6)
 7. [cTools](#7)
-8. [Misc.](#8)
 
 <a name="1"></a>
 ## Introduction
@@ -92,10 +91,9 @@ Then the new symmetric keys are used as ratcheting keys.\
 <a name="5"></a>
 ### Client
 
-The client is a set of microservices: an encryption proxy, a chat logic process, and a UI.\
-\
-A pecularity with the chat logic implementation is that it maintains files at runtime which\
-constitute the state of the chat program, decoupling it extensively from the UI.\
+The client is an encrypting proxy binary, and a UI.\
+// The prior version separated out the chat logic from the UI.\
+// For a simple chat program the duplication did not turn out to be worth the added complexity.\
 \
 The encryption proxy has three end-to-end encrypting modes that it can perform, and it can\
 perform any number of them at the same time, depending on configuration.
@@ -140,15 +138,6 @@ Encryption and decryption using the above.\
 Hashing, and hash verification.\
 \
 All output is in base64 (or whatever format the input was originally, in the case of decryption/decoding).
-
-<a name="8"></a>
-### Misc
-
-FileTransferServer is a simple node-express webserver with a chat program in it (simple SJCL symmetric encryption). \
-It is convenient for bootstrapping. The project is not clean as it was scavenged from other projects quickly.\
-\
-BrowserBasedChat is a distinct UI and chat logic that plugs into the standard encryption proxy. It forces the user to trust their browser,\
-but is nicer as an experience UI-wise. It is not clean as it was scavenged from other projects quickly.
 
 [to top](#top)
 

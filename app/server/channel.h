@@ -46,9 +46,9 @@ static Ret deadClientPredicate(void *self, Client **client) {
     if((*client)->state == CLIENT_CSTATE_DEAD) { DEBUG_LOG("Client dropped from channel.\n"); }
     return (*client)->state == CLIENT_CSTATE_DEAD;
 }
-static struct { ClientVecPredCB pred; } cvpStruct = {&deadClientPredicate};
 static void clearDeadClients(Channel *chan) {
-    ClientVecRm(&chan->clients, 0, ClientVecSize(&chan->clients), &cvpStruct);
+    static ClientVecPred deadClientPredPtr = &deadClientPredicate;
+    ClientVecRm(&chan->clients, 0, ClientVecSize(&chan->clients), &deadClientPredPtr);
 }
 static void MsgDe(Msg *msg) { if(msg) { free(msg->data); } }
 static Ret logMsg(Channel *chan, Buff *msgBuff, usize id) {
@@ -79,32 +79,41 @@ FAILED:
     return -1;
 }
 static Ret handleClientReads(Channel *chan) {
-    for(ClientVecGen gen = ClientVecBeg(&chan->clients); ClientVecNext(&gen); NOP) {
+    Client **iter = ClientVecData(&chan->clients);
+    Client **end = iter + ClientVecSize(&chan->clients);
+    while(iter != end) {
         while(1) {
-            Ret res = TunnelRecvP(&(*gen.val)->tunnel, &(*gen.val)->rcvBuff, NET_BLOCK_NONE);
-            if(res < 0) { (*gen.val)->state = CLIENT_CSTATE_DEAD; break; }
+            Ret res = TunnelRecvP(&(*iter)->tunnel, &(*iter)->rcvBuff, NET_BLOCK_NONE);
+            if(res < 0) { (*iter)->state = CLIENT_CSTATE_DEAD; break; }
             else if(res > 0) { break; }
-            else if(logMsg(chan, &(*gen.val)->rcvBuff, (*gen.val)->id)) { (*gen.val)->state = CLIENT_CSTATE_DEAD; break; }
+            else if(logMsg(chan, &(*iter)->rcvBuff, (*iter)->id)) { (*iter)->state = CLIENT_CSTATE_DEAD; break; }
         }
+
+        ++iter;
     }
+
     clearDeadClients(chan);
     return 0;
 FAILED:
     return -1;
 }
 static Ret handleClientSends(Channel *chan) {
-    for(ClientVecGen gen = ClientVecBeg(&chan->clients); ClientVecNext(&gen); NOP) {
-        for(usize logEnd = MsgVecSize(&chan->log); (*gen.val)->logPlace < logEnd; ++(*gen.val)->logPlace) {
-            Msg *msg = MsgVecData(&chan->log) + (*gen.val)->logPlace;
+    Client **iter = ClientVecData(&chan->clients);
+    Client **end = iter + ClientVecSize(&chan->clients);
+    while(iter != end) {
+        for(usize logEnd = MsgVecSize(&chan->log); (*iter)->logPlace < logEnd; ++(*iter)->logPlace) {
+            Msg *msg = MsgVecData(&chan->log) + (*iter)->logPlace;
 
-            if((*gen.val)->id != msg->sender) {    
-                Ret res = TunnelSendP(&(*gen.val)->tunnel, msg->data, msg->len, NET_BLOCK_NONE);
-                if(res < 0) { (*gen.val)->state = CLIENT_CSTATE_DEAD; break; }
-                else if(res > 0) { (*gen.val)->state = CLIENT_CSTATE_SNDBLK; break; }
+            if((*iter)->id != msg->sender) {    
+                Ret res = TunnelSendP(&(*iter)->tunnel, msg->data, msg->len, NET_BLOCK_NONE);
+                if(res < 0) { (*iter)->state = CLIENT_CSTATE_DEAD; break; }
+                else if(res > 0) { (*iter)->state = CLIENT_CSTATE_SNDBLK; break; }
             }
         }
+
+        ++iter;
     }
-    
+
     clearDeadClients(chan);
     return 0;
 FAILED:
@@ -115,14 +124,20 @@ static Ret resetChannelTriggers(Channel *chan) {
     PWhen temp = { PipeGetReadEnd(&chan->pip), PWHEN_IN };
     CHECK(PTrigVecPush(&chan->trigs, temp));
 
-    for(ClientVecGen gen = ClientVecBeg(&chan->clients); ClientVecNext(&gen); NOP) {
-        temp.fd = TCPSockGetFD(&(*gen.val)->sock);
-        temp.when = PWHEN_IN;
-        if((*gen.val)->state == CLIENT_CSTATE_SNDBLK) {
-            temp.when |= PWHEN_OUT;
-            (*gen.val)->state = CLIENT_CSTATE_ONBOARD;
+    {
+        Client **iter = ClientVecData(&chan->clients);
+        Client **end = iter + ClientVecSize(&chan->clients);
+        while(iter != end) {
+            temp.fd = TCPSockGetFD(&(*iter)->sock);
+            temp.when = PWHEN_IN;
+            if((*iter)->state == CLIENT_CSTATE_SNDBLK) {
+                temp.when |= PWHEN_OUT;
+                (*iter)->state = CLIENT_CSTATE_ONBOARD;
+            }
+            CHECK(PTrigVecPush(&chan->trigs, temp));
+
+            ++iter;
         }
-        CHECK(PTrigVecPush(&chan->trigs, temp));
     }
 
     temp.fd = 0; temp.when = 0;
@@ -131,10 +146,8 @@ static Ret resetChannelTriggers(Channel *chan) {
 FAILED:
     return -1;
 }
-static Ret msgIsNotLogged(void *pred, Msg *msg) {
-    void *ign = pred; return msg->data[msg->len] != '1'; }
-static struct { MsgVecPredCB pred; } noLogMsgPred = {&msgIsNotLogged};
-struct OldMsgPred { MsgVecPredCB pred; time_t currentTime; };
+static Ret msgIsNotLogged(void *pred, Msg *msg) { void *ign = pred; return msg->data[msg->len] != '1'; }
+struct OldMsgPred { MsgVecPred pred; time_t currentTime; };
 static Ret msgIsOld(void *ppred, Msg *msg) {
     struct OldMsgPred *pred = ppred;
     return msg->ts < pred->currentTime;
@@ -143,17 +156,27 @@ static void pruneLog(Channel *chan) {
     usize lastPlace = MsgVecSize(&chan->log);
     usize amtRm = 0;
     
-    struct OldMsgPred oldMsgPred = {&msgIsOld, time(0)};
-
-    for(ClientVecGen gen = ClientVecBeg(&chan->clients); ClientVecNext(&gen); NOP) {
-        if(lastPlace > (*gen.val)->logPlace) { lastPlace = (*gen.val)->logPlace; }
+    {
+        Client **iter = ClientVecData(&chan->clients);
+        Client **end = iter + ClientVecSize(&chan->clients);
+        while(iter != end) {
+            if(lastPlace > (*iter)->logPlace) { lastPlace = (*iter)->logPlace; }
+            ++iter;
+        }
     }
 
-    amtRm += MsgVecRm(&chan->log, 0, lastPlace, &noLogMsgPred); lastPlace -= amtRm;
-    amtRm += MsgVecRm(&chan->log, 0, lastPlace, &oldMsgPred);
+    static const MsgVecPred msgIsNotLoggedPredPtr = &msgIsNotLogged;
+    amtRm += MsgVecRm(&chan->log, 0, lastPlace, (MsgVecPred *)&msgIsNotLoggedPredPtr); lastPlace -= amtRm;
+    struct OldMsgPred oldMsgPred = {&msgIsOld, time(0)};
+    amtRm += MsgVecRm(&chan->log, 0, lastPlace, &oldMsgPred.pred);
 
-    for(ClientVecGen gen = ClientVecBeg(&chan->clients); ClientVecNext(&gen); NOP) {
-        (*gen.val)->logPlace -= amtRm;
+    {
+        Client **iter = ClientVecData(&chan->clients);
+        Client **end = iter + ClientVecSize(&chan->clients);
+        while(iter != end) {
+            (*iter)->logPlace -= amtRm;
+            ++iter;
+        }
     }
 }
 static Ret channelCB(PTask **task) {

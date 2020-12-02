@@ -1,13 +1,37 @@
+# LIBS= 
+# LINKS= 
+# NAME= 
+# TEST_RUN_ARGS=
+
+.SILENT:
+
+#-pedantic
+
+CC=clang
+DEBUG_FLAGS=-std=c17 -D JC_DEBUG  -Wextra -g -O3 -fno-common  -fno-omit-frame-pointer -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer
+THREAD_FLAGS=-std=c17 -D JC_DEBUG -Wextra -g -O3 -fno-common  -fno-omit-frame-pointer -fsanitize=thread
+
 test:
 	${CC} ${DEBUG_FLAGS} ${LIBS} ${NAME}.c ${LINKS} -o test_${NAME}.elf
-	./test_${NAME}.elf
+	./test_${NAME}.elf ${TEST_RUN_ARGS}
 	rm test_${NAME}.elf
+
+norm:
+	${CC} ${DEBUG_FLAGS} ${LIBS} ${NAME}.c ${LINKS} -o test_${NAME}.elf
 
 thread:
 	${CC} ${THREAD_FLAGS} ${LIBS} ${NAME}.c ${LINKS} -o ${NAME}_test.elf
-	./test_${NAME}.elf
+	./test_${NAME}.elf ${TEST_RUN_ARGS}
 	rm test_${NAME}.elf
 
-prod:
-	${CC} -O3 -static ${LIBS} ${NAME}.c ${LINKS} -o ${NAME}.elf
+prod: #-static <-- seg faulting with custom alloc ?
+	${CC} -std=c17 -O3  ${LIBS} ${NAME}.c ${LINKS} -o ${NAME}.elf
 	strip --strip-all ${NAME}.elf
+    
+perf:
+	${CC} -std=c17 -O3 -g ${LIBS} ${NAME}.c ${LINKS} -o ${NAME}.elf
+
+timed:
+	${CC} -std=c17 -O3 -g ${LIBS} ${NAME}.c ${LINKS} -o test_${NAME}.elf
+	./test_${NAME}.elf ${TEST_RUN_ARGS}
+	rm test_${NAME}.elf

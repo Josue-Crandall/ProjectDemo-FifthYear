@@ -71,7 +71,7 @@ static void PollerLoop(Poller *poller) {
 		}
 
 		#ifdef JC_DEBUG
-			fprintf(stderr, "Poller spin with %d ready\n", numRdy);
+			//fprintf(stderr, "Poller spin with %d ready\n", numRdy);
 		#endif
 
 		if(numRdy) {
@@ -157,6 +157,6 @@ static void PollerLoop(Poller *poller) {
 	}
 
 FAILED:
-	PipeCloseWriteEnd(&poller->pip);
+	PipeCloseReadEnd(&poller->pip);
 	return;
 }

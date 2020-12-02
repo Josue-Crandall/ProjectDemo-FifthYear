@@ -19,6 +19,7 @@
 
 #include <signal.h>
 #include <pthread.h>
+#include <unistd.h>
 
 typedef struct { pthread_t thread; u8 alive; } PThread;
 // If thread is NULL thread is set to detatched
@@ -33,6 +34,7 @@ typedef struct { pthread_mutex_t mutex; u8 alive; } PMutex;
 #define PMUTEX_STATIC_INIT {PTHREAD_MUTEX_INITIALIZER, 0}
 static Ret PMutexInit(PMutex *mutex);
 static void PMutexLock(PMutex *mutex);
+static Ret PMutexTryLock(PMutex *mutex);
 static void PMutexUnlock(PMutex *mutex);
 static void PMutexDe(PMutex *mutex);
 
@@ -42,6 +44,16 @@ static Ret PCondInit(PCond *cond);
 static void PCondWait(PCond *cond, PMutex *mutex);
 static void PCondSignal(PCond *cond, Ret broadcast);
 static void PCondDe(PCond *cond);
+
+typedef struct POnce { pthread_once_t once; } POnce;
+#define PONCE_STATIC_INIT   { PTHREAD_ONCE_INIT }
+static void POnceDo(POnce *once, void (*cb)(void));
+typedef struct PLocal { pthread_key_t key; } PLocal;
+// WARNING!!: May fail and loop infinitely. 
+//            No obvious way to avoid this and not have proc'd POnce.
+static Ret PLocalInit(PLocal *local, void (*destructor)(void *));
+static void *PLocalGet(PLocal *local);
+static Ret PLocalSet(PLocal *local, void *val);
 
 //// Signals
 static Ret setSignalHandler(int signalType, void(*handler)(int));
@@ -60,6 +72,10 @@ static Ret setSignalHandler(int signalType, void(*handler)(int));
 //WARNING: sets SIGCHLD
 //Note: envp may be null
 static pid_t forkedExec(char *file, char **argv, char **envp);
+//WARNING: sets SIGCHLD
+//Note: envp may be null
+//Note: returns -1 on failure, or the result of the executed program o.w.
+static int runProgram(char *file, char **argv, char **envp);
 
 #include "imp.h"
 

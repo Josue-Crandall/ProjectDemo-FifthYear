@@ -1,0 +1,2 @@
+1) Okay so cacheing pageSize et al... under the one local thread grab
+is a large improvement. The global thing isn't even part of the test.

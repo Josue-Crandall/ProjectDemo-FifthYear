@@ -26,54 +26,59 @@ typedef atomic_uint_least32_t Arc32;
 typedef atomic_uint_least64_t Arc64;
 
 //// Static initializer:
-//  static ArcX = ATOMIC_VAR_INIT(val);
+#define ARCX_INIT(VAL) ATOMIC_VAR_INIT(VAL)
 
-static void ArcInit(Arc *R() const arc, usize val)  { atomic_init(arc, val); }
-static void Arc8Init(Arc *R() const arc, u8 val) 	 { atomic_init(arc, val); }
-static void Arc32Init(Arc *R() const arc, u32 val)  { atomic_init(arc, val); }
-static void Arc64Init(Arc *R() const arc, u64 val)  { atomic_init(arc, val); }
+static void ArcInit(Arc *arc, usize val)  { atomic_init(arc, val); }
+static void Arc8Init(Arc *arc, u8 val) 	 { atomic_init(arc, val); }
+static void Arc32Init(Arc *arc, u32 val)  { atomic_init(arc, val); }
+static void Arc64Init(Arc *arc, u64 val)  { atomic_init(arc, val); }
 
-static void ArcAdd(Arc *R() const arc, usize val) { atomic_fetch_add_explicit(arc, val, memory_order_release); }
-static void Arc8Add(Arc *R() const arc, u8 val)   { atomic_fetch_add_explicit(arc, val, memory_order_release); }
-static void Arc32Add(Arc *R() const arc, u32 val) { atomic_fetch_add_explicit(arc, val, memory_order_release); }
-static void Arc64Add(Arc *R() const arc, u64 val) { atomic_fetch_add_explicit(arc, val, memory_order_release); }
+static void ArcAdd(Arc *arc, usize val) { atomic_fetch_add_explicit(arc, val, memory_order_release); }
+static void Arc8Add(Arc *arc, u8 val)   { atomic_fetch_add_explicit(arc, val, memory_order_release); }
+static void Arc32Add(Arc *arc, u32 val) { atomic_fetch_add_explicit(arc, val, memory_order_release); }
+static void Arc64Add(Arc *arc, u64 val) { atomic_fetch_add_explicit(arc, val, memory_order_release); }
 
-static void ArcSub(Arc *R() const arc, usize val) { atomic_fetch_sub_explicit(arc, val, memory_order_release); }
-static void Arc8Sub(Arc *R() const arc, u8 val)   { atomic_fetch_sub_explicit(arc, val, memory_order_release); }
-static void Arc32Sub(Arc *R() const arc, u32 val) { atomic_fetch_sub_explicit(arc, val, memory_order_release); }
-static void Arc64Sub(Arc *R() const arc, u64 val) { atomic_fetch_sub_explicit(arc, val, memory_order_release); }
+static void ArcSub(Arc *arc, usize val) { atomic_fetch_sub_explicit(arc, val, memory_order_release); }
+static void Arc8Sub(Arc *arc, u8 val)   { atomic_fetch_sub_explicit(arc, val, memory_order_release); }
+static void Arc32Sub(Arc *arc, u32 val) { atomic_fetch_sub_explicit(arc, val, memory_order_release); }
+static void Arc64Sub(Arc *arc, u64 val) { atomic_fetch_sub_explicit(arc, val, memory_order_release); }
 
 // Returns value before | 'ing
-static usize ArcOr(Arc *R() const arc, usize val) { return atomic_fetch_or_explicit(arc, val, memory_order_acq_rel); }
-static u8 Arc8Or(Arc *R() const arc, u8 val) { return atomic_fetch_or_explicit(arc, val, memory_order_acq_rel); }
-static u32 Arc32Or(Arc *R() const arc, u32 val) { return atomic_fetch_or_explicit(arc, val, memory_order_acq_rel); }
-static u64 Arc64Or(Arc *R() const arc, u64 val) { return atomic_fetch_or_explicit(arc, val, memory_order_acq_rel); }
+static usize ArcOr(Arc *arc, usize val) { return atomic_fetch_or_explicit(arc, val, memory_order_acq_rel); }
+static u8 Arc8Or(Arc *arc, u8 val) { return atomic_fetch_or_explicit(arc, val, memory_order_acq_rel); }
+static u32 Arc32Or(Arc *arc, u32 val) { return atomic_fetch_or_explicit(arc, val, memory_order_acq_rel); }
+static u64 Arc64Or(Arc *arc, u64 val) { return atomic_fetch_or_explicit(arc, val, memory_order_acq_rel); }
 
 // Returns value before  & 'ing
-static usize ArcAnd(Arc *R() const arc, usize val) { return atomic_fetch_and_explicit(arc, val, memory_order_acq_rel); }
-static u8 Arc8And(Arc *R() const arc, u8 val) { return atomic_fetch_and_explicit(arc, val, memory_order_acq_rel); }
-static u32 Arc32And(Arc *R() const arc, u32 val) { return atomic_fetch_and_explicit(arc, val, memory_order_acq_rel); }
-static u64 Arc64And(Arc *R() const arc, u64 val) { return atomic_fetch_and_explicit(arc, val, memory_order_acq_rel); }
+static usize ArcAnd(Arc *arc, usize val) { return atomic_fetch_and_explicit(arc, val, memory_order_acq_rel); }
+static u8 Arc8And(Arc *arc, u8 val) { return atomic_fetch_and_explicit(arc, val, memory_order_acq_rel); }
+static u32 Arc32And(Arc *arc, u32 val) { return atomic_fetch_and_explicit(arc, val, memory_order_acq_rel); }
+static u64 Arc64And(Arc *arc, u64 val) { return atomic_fetch_and_explicit(arc, val, memory_order_acq_rel); }
 
 // Returns value before ^ ' ing
-static usize ArcXor(Arc *R() const arc, usize val) { return atomic_fetch_xor_explicit(arc, val, memory_order_acq_rel); }
-static u8 Arc8Xor(Arc *R() const arc, u8 val) { return atomic_fetch_xor_explicit(arc, val, memory_order_acq_rel); }
-static u32 Arc32Xor(Arc *R() const arc, u32 val) { return atomic_fetch_xor_explicit(arc, val, memory_order_acq_rel); }
-static u64 Arc64Xor(Arc *R() const arc, u64 val) { return atomic_fetch_xor_explicit(arc, val, memory_order_acq_rel); }
+static usize ArcXor(Arc *arc, usize val) { return atomic_fetch_xor_explicit(arc, val, memory_order_acq_rel); }
+static u8 Arc8Xor(Arc *arc, u8 val) { return atomic_fetch_xor_explicit(arc, val, memory_order_acq_rel); }
+static u32 Arc32Xor(Arc *arc, u32 val) { return atomic_fetch_xor_explicit(arc, val, memory_order_acq_rel); }
+static u64 Arc64Xor(Arc *arc, u64 val) { return atomic_fetch_xor_explicit(arc, val, memory_order_acq_rel); }
 
 // Returns 1 when last out
-static Ret ArcDec(Arc *R() const arc) { return atomic_fetch_sub_explicit(arc, 1, memory_order_acq_rel) == 1; }
+static Ret ArcDec(Arc *arc) { return atomic_fetch_sub_explicit(arc, 1, memory_order_acq_rel) == 1; }
 // Returns 1 on first dibs
-static Ret ArcInc(Arc *R() arc) { return atomic_fetch_add_explicit(arc, 1, memory_order_acq_rel) == 0; }
+static Ret ArcInc(Arc *arc) { return atomic_fetch_add_explicit(arc, 1, memory_order_acq_rel) == 0; }
 
-static usize ArcRead(Arc *R() const arc) { return atomic_load_explicit(arc, memory_order_acquire); }
-static u8 Arc8Read(Arc *R() const arc)    { return atomic_load_explicit(arc, memory_order_acquire); }
-static u32 Arc32Read(Arc *R() const arc)  { return atomic_load_explicit(arc, memory_order_acquire); }
-static u64 Arc64Read(Arc *R() const arc)  { return atomic_load_explicit(arc, memory_order_acquire); }
+static usize ArcRead(Arc *arc) { return atomic_load_explicit(arc, memory_order_acquire); }
+static u8 Arc8Read(Arc *arc)    { return atomic_load_explicit(arc, memory_order_acquire); }
+static u32 Arc32Read(Arc *arc)  { return atomic_load_explicit(arc, memory_order_acquire); }
+static u64 Arc64Read(Arc *arc)  { return atomic_load_explicit(arc, memory_order_acquire); }
 
-static void ArcWrite(Arc *R() const arc, usize val) { atomic_store_explicit(arc, val, memory_order_release); }
-static void Arc8Write(Arc *R() const arc, u8 val)   { atomic_store_explicit(arc, val, memory_order_release); }
-static void Arc32Write(Arc *R() const arc, u32 val) { atomic_store_explicit(arc, val, memory_order_release); }
-static void Arc64Write(Arc *R() const arc, u64 val) { atomic_store_explicit(arc, val, memory_order_release); }
+static void ArcWrite(Arc *arc, usize val) { atomic_store_explicit(arc, val, memory_order_release); }
+static void Arc8Write(Arc *arc, u8 val)   { atomic_store_explicit(arc, val, memory_order_release); }
+static void Arc32Write(Arc *arc, u32 val) { atomic_store_explicit(arc, val, memory_order_release); }
+static void Arc64Write(Arc *arc, u64 val) { atomic_store_explicit(arc, val, memory_order_release); }
+
+static usize ArcSwap(Arc *arc, usize val) { return atomic_exchange_explicit(arc, val, memory_order_acq_rel); }
+static u8 Arc8Swap(Arc8 *arc, usize val) { return atomic_exchange_explicit(arc, val, memory_order_acq_rel); }
+static u32 Arc32Swap(Arc32 *arc, usize val) { return atomic_exchange_explicit(arc, val, memory_order_acq_rel); }
+static u64 Arc64Swap(Arc64 *arc, usize val) { return atomic_exchange_explicit(arc, val, memory_order_acq_rel); }
 
 #endif

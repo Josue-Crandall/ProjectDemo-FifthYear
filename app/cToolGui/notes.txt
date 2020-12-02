@@ -1,0 +1,54 @@
+# apt install python3
+# apt install python3-pip
+# apt install python3-tk
+
+import tkinter as tk
+
+window = tk.Tk()
+
+def handle_keypress(event):
+    print(event.char)
+
+window.bind("<Key>", handle_keypress)
+# KeyPress KeyRelease Enter FocusIn FocusOut
+# window.bind("<Button-1/2middle/3>", handle_click)
+
+# int("12345"), f"{value + 1}"
+# button = tk.Button(master=window,text="+",command=increase)
+
+
+
+#frame1 = tk.Frame()
+# relief=tk.FLAT,SUNKEN,RAISED,GROOVE,RIDGE,borderwidth=,master=window
+#frame2 = tk.Frame()
+
+#pack(fill=tk.X/Y/BOTH, side=tk.TOP/BOTTOM/LEFT/RIGHT, expand=True, padx=5, pady=5)
+#place(x=0,y=0) # pixels
+#frame.grid(row=i,col=j, padx=5,pady=5, sticky="n/e/s/w can do multiple, all4 means fill cell") // <-- packs in the frame
+#                                           ^ justify
+#window.columnconfigure(col, weight = 1, minsize=64(pixels)) .rowconfigure()
+
+#greeting = tk.Label(master=frame1,text="Hello, tkinter bra", fg="LightCyan2",bg="#34A2FE", width=900, height=600)
+# red, white, black, orange, yellow, green, blue, purple
+# #34A2FE // hex color
+# w/h by text units size of 0's
+#greeting.pack()
+
+#clickMe = tk.Button(text="Click me!", width=50, height=50, bg="spring green", fg="red")
+#clickMe.pack()
+
+#tk.Text
+#entryh = tk.Entry(master=frame2,fg='yellow',bg='blue',width='50')
+#entryh.pack()
+# .get("1.0", "1.5") .delete(0, tk.END) .insert(0, "Python")
+#         ^ first line, chars [0-5) (can use tk.END for the second parameter)
+#         ^              ^               ^ similar parameters for tk.Text instead of .Entry
+# for insert can also use tk.END as the first parameter
+
+#frame1.pack()
+#frame2.pack()
+
+
+window.mainloop()
+
+

@@ -22,7 +22,7 @@
 #endif
 ////////
 
-#include <stddef.h>     // size_t, ptrdiff_t, max_align_t, offsetof(struct name, member), NULL
+#include <stddef.h>     // size_t, ptrdiff_t, offsetof(struct name, member), NULL
 #include <stdint.h>     // uint8_t ...
 #include <sys/types.h>  // ssize_t (posix)
 #include <limits.h>     // INT_MAX, etc...
@@ -41,9 +41,9 @@ typedef ssize_t  isize;
 typedef signed long long ill;
 typedef unsigned long long ull;
 typedef int_fast8_t Ret;
-typedef max_align_t umax;
 typedef uintptr_t uptr;
 typedef intptr_t iptr;
+typedef max_align_t umax;
 
 #define NOP // no op
 #define R() restrict
@@ -75,11 +75,34 @@ static_assert(CHAR_BIT == 8, "Assumed.");
     fprintf(stderr,"\n");                                   \
 }                                                           \
 
+#define BIN_DEBUG_WINDOW(START, LEN) {                      \
+    u8 *R() DEBUG_WINDOW_ITER = (u8 *R())(START);           \
+    u8 *R() DEBUG_WINDOW_END  = DEBUG_WINDOW_ITER + (LEN);  \
+                                                            \
+    fprintf(stderr, "Bin Debug window for: %s, len %td\n", #START, DEBUG_WINDOW_END - DEBUG_WINDOW_ITER); \
+                                                            \
+    while(DEBUG_WINDOW_ITER != DEBUG_WINDOW_END) {          \
+        for(usize mask = 1; mask < (1 << 8); mask <<= 1) {  \
+            fprintf(stderr,"%c", *DEBUG_WINDOW_ITER & mask ? '1' : '0'); \
+        }                                                   \
+        fprintf(stderr, " ");                               \
+        ++DEBUG_WINDOW_ITER;                                \
+    }                                                       \
+    fprintf(stderr,"\n\n");                                 \
+}                                                           \
+
 #define CHECK(EXP) {                                        \
     ill CHECK_RET = (ill)(EXP);                             \
     if(CHECK_RET) {                                         \
         fprintf(stderr,"%s failed check with (%lli)\n", #EXP, CHECK_RET);  \
         goto FAILED;                                        \
+    }                                                       \
+}                                                           \
+
+#define CHECK_IGN(EXP) {                                    \
+    ill CHECK_RET = (ill)(EXP);                             \
+    if(CHECK_RET) {                                         \
+        fprintf(stderr,"%s failed check with (%lli)\n", #EXP, CHECK_RET);  \
     }                                                       \
 }                                                           \
 
@@ -106,13 +129,14 @@ static_assert(CHAR_BIT == 8, "Assumed.");
     }                                                                       \
 }                                                                           \
 
-
 #else
     #define NDEBUG
 
 #define DEBUG_LOG(PRINTF_BODY) NOP
 #define DEBUG_WINDOW(START, END) NOP
+#define BIN_DEBUG_WINDOW(START, LEN) NOP
 #define CHECK(EXP) { if(EXP) { goto FAILED; } }
+#define CHECK_IGN(EXP) { EXP; }
 #define EINTR_CHECK(EXP) {                      \
     while(1) {                                  \
         if((EXP) < 0) {                         \
@@ -132,6 +156,16 @@ static_assert(CHAR_BIT == 8, "Assumed.");
 
 #endif
 
+// Note: Awkward to have variants in debug, leaving here for now
+#define DEBUG_TIMER(EXP, TRIALS) {                                                  \
+    Timer TIMER_MACRO_TIMER;                                                        \
+    ull DEBUG_TIMER_TRAILS = (TRIALS);                                              \
+    TimerStart(&TIMER_MACRO_TIMER);                                                 \
+    for(ull DEBUG_TIMER_I = 0; DEBUG_TIMER_I < DEBUG_TIMER_TRAILS; ++DEBUG_TIMER_I) { EXP; } \
+    if(TimerStop(&TIMER_MACRO_TIMER)) { fprintf(stderr, "TIMER FAILURE?\n"); }      \
+    fprintf(stderr, "Timed %s: ", #EXP); TimerDisplay(&TIMER_MACRO_TIMER); printf("\n"); \
+}                                                                                   \
+
 #define NULL_CHECK(EXP) CHECK(!(EXP))
 #define FD_CLOSE(FD) { if((FD) > -1) { EINTR_CHECK_IGN(close(FD)); } }
 #define NEG_CHECK(EXP) CHECK((EXP) < 0)
@@ -148,6 +182,7 @@ static_assert(CHAR_BIT == 8, "Assumed.");
 // Note: untested
 #define ROUND_TO_MULTIPLE(VAL, MULTIPLE, TYPE, LIM) { TYPE ROUND_TO_MULTIPLE_TEMP = (MULTIPLE) - ((VAL) % (MULTIPLE)); ADD_CHECK(VAL, ROUND_TO_MULTIPLE_TEMP, LIM); }
 #define HOST_LITTLE_ENDIAN() (*(u16 *)"\x01" == (u16)1)
+// WARNING: Overflows to 0
 #define POW2_ROUND(VAL, TYPE) {                                                 \
     --(VAL);                                                                    \
     for(TYPE ROUND_SHIFT_TEMP = 1, ROUND_END_TEMP = sizeof(TYPE) * CHAR_BIT;    \
@@ -157,5 +192,13 @@ static_assert(CHAR_BIT == 8, "Assumed.");
     }                                                                           \
     ++(VAL);                                                                    \
 }                                                                               \
-
+    
 #endif
+
+
+// PTRDIFF_MIN is the minimum value of ptrdiff_t.
+// PTRDIFF_MAX is the maximum value of ptrdiff_t.
+
+// Trigraph:       ??(  ??)  ??<  ??>  ??=  ??/  ??'  ??!  ??-
+// Replacement:      [    ]    {    }    #    \    ^    |    ~
+

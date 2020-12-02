@@ -16,6 +16,8 @@
 #include "../rng/rng.h"
 #include "../alloc/alloc.h"
 
+// Note: This really should get cleaned up. 11/17/2020
+
 // Note: Don't invalidate generator on removal.
 // If required add explicit shrink functions.
 // Note: alloc.h now reliant on zero value return to out
@@ -24,7 +26,8 @@
 #define TBL_DEFAULT_CAPACITY    16
 static_assert(TBL_DEFAULT_CAPACITY > 0, "Required for grow logic.");
 
-static_assert(sizeof(umax) >= 2, "Using pointers after NULL");
+// WARNING!!: max_align_t doesn't seem to be in C. Compiles b/c of C++ headers
+static_assert(sizeof(max_align_t) >= 2, "Using pointers after NULL.");
 #define TBL_FLG_SPARE_ENTRY     ((void *)(1))
 
 #define TABLE_STATE_EMPTY 0 // Must be 0

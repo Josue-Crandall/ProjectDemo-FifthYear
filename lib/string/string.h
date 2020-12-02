@@ -25,7 +25,8 @@
 
 typedef Buff Str;
 
-static Ret StrInit(Str *str, const char *const base);
+static Ret StrInit(Str *str, char *base);
+static Ret StrFromFile(Str *str, char *path);
 static char * StrIng(Str *str);
 static usize StrLen(Str *str);
 static Ret StrPush(Str *str, const char *const cstr);
@@ -34,6 +35,9 @@ static void StrPop(Str *str, usize amt);
 static void StrClear(Str *str);
 static usize StrHash(Str *str);
 static Ret StrEq(Str *R() lhs, Str *R() rhs);
+static Ret StrCEq(Str *R() lhs, char *rhs);
+// Note: Simply terminates line on EOF rather than requiring a '\n'
+static Ret StrReadLine(Str *R() str, int fd);
 static void StrDe(Str *str);
 
 #include "imp.h"

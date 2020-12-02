@@ -1,6 +1,6 @@
-include ../macros/MakefileMacros
+include ../macros/MakefileMacros2
 
-test:
-	${CC} ${DEBUG_FLAGS} test.c -otest
-	./test
-	rm test
+LIBS= 
+LINKS=-lpthread
+NAME=test
+TEST_RUN_ARGS=

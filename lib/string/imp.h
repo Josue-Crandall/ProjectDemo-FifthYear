@@ -15,7 +15,11 @@
 
 static_assert(STR_EXTRA_BASE_CAPACITY + 1 > STR_EXTRA_BASE_CAPACITY, "overflow check");
 
-static Ret StrInit(Str *str, const char *const base) {
+#include "../file/file.h"
+
+#include <errno.h>
+
+static Ret StrInit(Str *str, char* base) {
     memset(str, 0, sizeof(Str));
 
     usize baseLen = strlen(base);
@@ -26,7 +30,16 @@ static Ret StrInit(Str *str, const char *const base) {
     memcpy(BuffData(str), base, baseLen);
     BuffData(str)[baseLen] = 0;
     
-
+    return 0;
+FAILED:
+    BuffDe(str);
+    memset(str, 0, sizeof(Str));
+    return -1;
+}
+static Ret StrFromFile(Str *str, char *path) {
+    CHECK(BuffInit(str, 0));
+    CHECK(BuffLoadFile(str, path));
+    CHECK(StrCPush(str, '\0'));
     return 0;
 FAILED:
     BuffDe(str);
@@ -75,5 +88,23 @@ static usize StrHash(Str *str) {
 }
 static Ret StrEq(Str *R() lhs, Str *R() rhs) {
     return !strcmp((char *)BuffData(lhs), (char *)BuffData(rhs));
+}
+static Ret StrCEq(Str *R() lhs, char *rhs) {
+    return !strcmp((char *)BuffData(lhs), rhs);
+}
+static Ret StrReadLine(Str *R() str, int fd) {
+    StrClear(str);
+
+    while(1) {
+        char temp;
+        ssize_t amt = read(fd, &temp, sizeof(char));
+        if(0 == amt) { return 1; }
+        else if(amt < 0 && errno != EINTR) { DEBUG_LOG("StrReadLine failed\n"); goto FAILED; }
+        else if(temp == '\n') { return 0; }
+        else { CHECK(StrCPush(str, temp)); }
+    }
+
+FAILED:
+    return -1;
 }
 

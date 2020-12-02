@@ -13,6 +13,9 @@
     GNU General Public License for more details.
 */
 
+#include "../timer/timer.h"
+SPRAI(Timer, t);
+
 #include <stdio.h>
 
 #include "vec.h"
@@ -20,47 +23,59 @@
 #include <stdlib.h>
 #include <time.h>
 
-DD_VEC(Vec, usize *, free(val), STD_ALLOC);
+DD_VEC(Vec, usize *, STD_ALLOCFree(val, sizeof(usize *)), MLOCK_ALLOC);
 
 Ret p1(void *pred, usize **val) {
     void *ign = pred;
     return **val > 7;
 }
-struct { VecPredCB cb; } pred = {&p1};
+static VecPred predPtr = &p1;
 
 Ret test0() {
     PRAI(Vec, v1);
     PRAI(Vec, v2);
-    VecInit(v1, 0);
-    VecInit(v2, 72);
+
+    CHECK(VecInit(v1, 0));
+    CHECK(VecInit(v2, 72));
 
     for(usize i = 0; i < 37; ++i) {
-        VecPush(v1, stdMalloc(1, sizeof(usize)));
+        //printf("%zu\n", i);
+        VecPush(v1, STD_ALLOCMalloc(1, sizeof(usize)));
         *VecData(v1)[i] = i;
     }
 
-    for(VecGen gen = VecBeg(v1); VecNext(&gen); NOP) { printf("%zu, ", **gen.val); }
-    printf("\n");
+    for(usize **iter = VecData(v1), **end = iter + VecSize(v1); iter != end; ++iter) {
+        //printf("%zu, ", **iter);
+    }
 
-    VecRm(v1, 0, VecSize(v1), &pred);
+    //printf("\n");
 
-    for(VecGen gen = VecBeg(v1); VecNext(&gen); NOP) { printf("%zu, ", **gen.val); }
-    printf("\n");
+    VecRm(v1, 0, VecSize(v1), &predPtr);
 
-    Ret ret = 0;
+    for(usize **iter = VecData(v1), **end = iter + VecSize(v1); iter != end; ++iter) {
+        //printf("%zu, ", **iter);
+    }
+    //printf("\n");
+
+    Ret res = 0;
 CLEAN:
     VecDe(v1);
     VecDe(v2);
-    return ret;
+    return res;
 FAILED:
-    ret = -1;
+    res = -1;
     goto CLEAN;
 }
 
 int main(void) {
     usize x = 5; UNSIGNED_LSHIFT_CHECK(x, usize); CHECK(x != 10);
 
-    CHECK(test0());
+    printf("%zu\n", sizeof(Vec));
+
+    TimerStart(t);
+    for(int i = 0; i < 6751 * 16; ++i) { CHECK(test0()); }
+    TimerStop(t);
+    TimerDisplay(t);
     printf("pass\n");
     return 0;
 FAILED:

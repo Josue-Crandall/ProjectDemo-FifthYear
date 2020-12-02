@@ -71,7 +71,7 @@ FAILED:
 ////
 
 static void toBinImp(u8 *R() dst, u8 *R() src, u8 *R() end) {
-    static  u8 REVERSE_TABLE[] = {
+    static u8 REVERSE_TABLE[] = {
         0,
         0,0,0,0,0,0,0,0,0,0,
         0,0,0,0,0,0,0,0,0,0,

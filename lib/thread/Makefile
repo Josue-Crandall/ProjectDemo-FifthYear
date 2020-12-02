@@ -1,10 +1,4 @@
-include ../macros/MakefileMacros
+include ../macros/MakefileMacros2
 
-test:
-	${CC} ${DEBUG_FLAGS} test.c -o test
-	./test
-	rm test
-
-hw:
-	${CC} ${DEBUG_FLAGS} test.c -oHW.elf
-
+NAME=test
+LINKS=-lpthread
