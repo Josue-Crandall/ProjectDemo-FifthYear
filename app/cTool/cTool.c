@@ -30,6 +30,7 @@ static Conf conf;
 static Smem buff1, buff2, buff3, buff4;
 static Oprot oprot;
 static Rprot rprot;  char *rprotDestroyPath;
+
 static void cleanupStatics(void) {
     SmemDe(&buff1);SmemDe(&buff2);SmemDe(&buff3);SmemDe(&buff4);
     OprotDe(&oprot);RprotDe(&rprot, rprotDestroyPath);
@@ -76,6 +77,14 @@ static void safeReserve(Smem *buff, usize bytes) {
     }
     SmemSetSize(buff, bytes);
 }
+static void saveEncodedFile(char *path, Smem *buff) {
+    if(ConfGet(&conf, "binaryEncoding")) { saveBinFile(path, buff); }
+    else { saveB64File(path, buff); }
+}
+static void loadEncodedFile(char *path, Smem *buff) {
+    if(ConfGet(&conf, "binaryEncoding")) { loadBinFile(path, buff); }
+    else { loadB64File(path, buff); }
+}
 ////////
 static void encodeBase64fn() {
     char *R() inPath = parseKey("inputFile");
@@ -99,19 +108,22 @@ static void symmetricEncfn() {
     char *R() keyPath = parseKey("keyFile");
     char *R() inPath = parseKey("inputFile");
     char *R() outPath = parseKey("outputFile");
+
     loadKey(keyPath, &buff1, NACLS_KEY_BYTES);
     loadBinFile(inPath,&buff2);
     if(SmemSEncrypt(&buff2, SmemData(&buff1), &buff3)) {
         exitFailure("Encrypt failed ", "?allocation?", ".");
     }
-    saveB64File(outPath, &buff2);
+
+    saveEncodedFile(outPath, &buff2);
 }
 static void symmetricDecfn() {
     char *R() keyPath = parseKey("keyFile");
     char *R() inPath = parseKey("inputFile");
     char *R() outPath = parseKey("outputFile");
+
     loadKey(keyPath, &buff1, NACLS_KEY_BYTES);
-    loadB64File(inPath,&buff2);
+    loadEncodedFile(inPath,&buff2);
     if(SmemSDecrypt(&buff2, SmemData(&buff1), &buff3)) {
         exitFailure("Authentication failure while decrypting ", inPath, ".");
     }
@@ -132,25 +144,29 @@ static void asymmetricEncfn() {
     char *R() skPath = parseKey("privateKeyPath");
     char *R() inPath = parseKey("inputFile");
     char *R() outPath = parseKey("outputFile");
+
     loadKey(pkPath, &buff1, NACLA_PUB_BYTES);
     loadKey(skPath, &buff2, NACLA_SEC_BYTES);
     loadBinFile(inPath, &buff4);
     if(SmemAEncrypt(&buff4, SmemData(&buff1), SmemData(&buff2), &buff3)) {
         exitFailure("Encrypt failed ", "?allocation?", ".");
     }
-    saveB64File(outPath, &buff4);
+
+    saveEncodedFile(outPath, &buff4);
 }
 static void asymmetricDecfn() {   
     char *R() pkPath = parseKey("publicKeyPath");
     char *R() skPath = parseKey("privateKeyPath");
     char *R() inPath = parseKey("inputFile");
     char *R() outPath = parseKey("outputFile");
+
     loadKey(pkPath, &buff1, NACLA_PUB_BYTES);
     loadKey(skPath, &buff2, NACLA_SEC_BYTES);
-    loadB64File(inPath, &buff4);
+    loadEncodedFile(inPath, &buff4);
     if(SmemADecrypt(&buff4, SmemData(&buff1), SmemData(&buff2), &buff3)) {
         exitFailure("Authentication failure while decrypting ", inPath, "");
     }
+
     saveBinFile(outPath, &buff4);
 }
 static void dratchetGenfn() {
@@ -164,27 +180,31 @@ static void dratchetEncfn() {
     char *R() key = parseKey("keyFile");
     char *R() inPath = parseKey("inputFile");
     char *R() outPath = parseKey("outputFile");
+
     if(RprotInit(&rprot, key)) {
         exitFailure("Could not parse ", key, " as a double ratchet protocol key.");
     }
     rprotDestroyPath = key;
     loadBinFile(inPath, &buff1);
-    if(SmemRPEncrypt(&rprot, &buff1, &buff3, &buff4)) {
+
+    if(SmemRPEncrypt(&buff1, &rprot, &buff3, &buff4)) {
         exitFailure("Encrypt failed ", "?allocation?", ".");
     }
     RPEncryptFinish(&rprot, SmemData(&buff3));
-    saveB64File(outPath, &buff1);
+
+    saveEncodedFile(outPath, &buff1);
 }
 static void dratchetDecfn() {   
     char *R() key = parseKey("keyFile");
     char *R() inPath = parseKey("inputFile");
     char *R() outPath = parseKey("outputFile");
+
     if(RprotInit(&rprot, key)) {
         exitFailure("Could not parse ", key, " as a double ratchet protocol key.");
     }
     rprotDestroyPath = key;
-    loadB64File(inPath, &buff1);
-    if(SmemRPDecrypt(&rprot, &buff1, &buff3, &buff4)) {
+    loadEncodedFile(inPath, &buff1);
+    if(SmemRPDecrypt(&buff1, &rprot, &buff3, &buff4)) {
         exitFailure("Authentication failure while decrypting ", inPath, "");
     }
     saveBinFile(outPath, &buff1);
@@ -202,43 +222,50 @@ static void otpEncfn() {
     char *R() key = parseKey("keyFile");
     char *R() inPath = parseKey("inputFile");
     char *R() outPath = parseKey("outputFile");
+
     if(OprotInit(&oprot, key)) {
         exitFailure("Could not parse ", key, " as a one time pad key.");
     }
     loadBinFile(inPath, &buff1);
-    if(SmemOPEncrypt(&oprot, &buff1, &buff3, SmemData(&buff4))) {
+    if(SmemOPEncrypt(&buff1, &oprot, &buff3, SmemData(&buff4))) {
         exitFailure("Encrypt failed ", "?allocation?", ".");
     }
-    saveB64File(outPath, &buff1);
+
+    saveEncodedFile(outPath, &buff1);
 }
 static void otpDecfn() {   
     char *R() key = parseKey("keyFile");
     char *R() inPath = parseKey("inputFile");
     char *R() outPath = parseKey("outputFile");
+
     if(OprotInit(&oprot, key)) {
         exitFailure("Could not parse ", key, " as a one time pad key.");
     }
-    loadB64File(inPath, &buff1);
-    if(SmemOPDecrypt(&oprot, &buff1, &buff3, SmemData(&buff4))) {
+    loadEncodedFile(inPath, &buff1);
+    if(SmemOPDecrypt(&buff1, &oprot, &buff3, SmemData(&buff4))) {
         exitFailure("Authentication failure while decrypting ", inPath, "");
     }
+    
     saveBinFile(outPath, &buff1);
 }
 static void hashfn() {
     char *R() inPath = parseKey("inputFile");
     char *R() outPath = parseKey("outputFile");
+
     loadBinFile(inPath, &buff1);
     safeReserve(&buff2, NACLH_BYTES);
     naclHash(SmemData(&buff2), SmemData(&buff1), SmemSize(&buff1));
-    saveB64File(outPath, &buff2);
+
+    saveEncodedFile(outPath, &buff2);
 }
 static void verifyHashfn() {
     char *R() inPath = parseKey("inputFile");
     char *R() hashPath = parseKey("hashFile");
+
     loadBinFile(inPath, &buff1);
     safeReserve(&buff2, NACLH_BYTES);
     naclHash(SmemData(&buff2), SmemData(&buff1), SmemSize(&buff1));
-    loadB64File(hashPath, &buff4);
+    loadEncodedFile(hashPath, &buff4);
     if(SmemSize(&buff4) != NACLH_BYTES) {
         exitFailure("Hash file ", hashPath, " was not a valid length");
     }
@@ -251,7 +278,9 @@ static void verifyHashfn() {
         printf("Success: %s was verified against hash\n", inPath);
     }
 }
+
 ////////////////////
+
 int main(int argc, char **argv) {
     if(argc == 2) { confPath = argv[1]; }
     if(ConfInit(&conf, confPath)) {
