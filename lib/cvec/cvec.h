@@ -17,6 +17,7 @@
 #define JC_CVEC_H
 #include "../macros/macros.h"
 
+#include "../arc/arc.h"
 #include "../vec/vec.h"
 #include "../thread/thread.h"
 
@@ -30,7 +31,7 @@ typedef struct NAME { 						    			\
     NAME##Vec vec; 											\
     PMutex mutex; 											\
     PCond cond; 											\
-    Ret done;												\
+    Arc8 done;												\
 } NAME;														\
 static Ret NAME##Init(NAME *cvec, size_t cap);              \
 static Ret NAME##Push(NAME *  cvec, VAL_T val);             \

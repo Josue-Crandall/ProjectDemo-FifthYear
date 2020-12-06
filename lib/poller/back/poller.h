@@ -20,7 +20,6 @@
 #include "../pipe/pipe.h"
 #include "../thread/thread.h"
 #include "../vec/vec.h"
-#include "../arc/arc.h"
 
 #include <poll.h>
 
@@ -52,11 +51,9 @@ DD_VEC(PollTaskTrackers, PollTaskTracker, PTaskDe(val.task), STD_ALLOC);
 
 typedef struct Poller {
     int timeoutMiliSec;
-    Arc8 done;
     Pipe pip;
     PollFDs fds;
     PollTaskTrackers trackers;
-    PMutex pipetex;
 } Poller;
 
 // WARNING: Multiple PTask's registering the same file descriptor is undefined behavior

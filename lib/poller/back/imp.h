@@ -21,8 +21,6 @@ static Ret PollerInit(Poller *poller, int timeoutMiliSec) {
 	CHECK(PipeInit(&poller->pip, NULL));
 	CHECK(PollFDsInit(&poller->fds, POLL_EVENT_QUEUE_SIZE));
 	CHECK(PollTaskTrackersInit(&poller->trackers, POLL_EVENT_QUEUE_SIZE));
-	CHECK(PMutexInit(&poller->pipetex));
-	Arc8Init(&poller->done, 0);
 
 	struct pollfd pipeFD;
 	pipeFD.fd = PipeGetReadEnd(&poller->pip);
@@ -43,33 +41,19 @@ static void PollerDe(Poller *poller) {
 		PollTaskTrackersDe(&poller->trackers);
 		PollFDsDe(&poller->fds);
 		PipeDe(&poller->pip);
-		PMutexDe(&poller->pipetex);
 	}
 }
 static void PollerSetTimeout(Poller *poller, int timeoutMiliSec) {
 	poller->timeoutMiliSec = timeoutMiliSec;
 }
 static Ret PollerPush(Poller *poller, PTask **task) {
-	PMutexLock(&poller->pipetex);
-	if(Arc8Read(&poller->done)) { goto FAILED; }
 	CHECK(PipeWrite(&poller->pip, (void *)&task, sizeof(PTask **)));
-	PMutexUnlock(&poller->pipetex);
 	return 0;
-
 FAILED:
-	PMutexUnlock(&poller->pipetex);
 	(*task)->de(task);
 	return -1;
 }
-static void PollerStop(Poller *poller) {
-	if(!Arc8Swap(&poller->done, 1)) {
-		// Note: Pipe not sending POLLHUP on close in all cases.
-		//       Sending wakeup by writing.
-		static u8 stopSig = 0;
-		CHECK_IGN(PipeWrite(&poller->pip, &stopSig, 1));
-		PipeCloseWriteEnd(&poller->pip);		
-	}
-}
+static void PollerStop(Poller *poller) { PipeCloseWriteEnd(&poller->pip); }
 static Ret TaskClearingPredicate(void *self, PollTaskTracker *tracker) { void *ign = self; return !tracker->task; }
 static Ret FDsClearingPredicate(void *self, struct pollfd *pollfd) { void *ign = self; return !pollfd->events; }
 static PollFDsPred POLL_CLEAR_PRED2 = { FDsClearingPredicate };
@@ -88,14 +72,13 @@ static void PollerLoop(Poller *poller) {
 		}
 
 		#ifdef JC_DEBUG
-			//fprintf(stderr, "Poller spin with %d ready\n", numRdy);
+			fprintf(stderr, "Poller spin with %d ready\n", numRdy);
 		#endif
 
 		if(numRdy) {
 			struct pollfd *fd = PollFDsData(&poller->fds);
 			if(fd->events & fd->revents) {
 				while(1) {
-					if(Arc8Read(&poller->done)) { return; }
 					struct PollTaskTracker tracker;
 					usize ign;
 					Ret res = PipeRead(&poller->pip, (void *)&tracker.task, &ign);
@@ -175,14 +158,13 @@ static void PollerLoop(Poller *poller) {
 	}
 
 FAILED:
-	PMutexLock(&poller->pipetex);
-	Arc8Write(&poller->done, 1);
+	PipeCloseWriteEnd(&poller->pip);
 	while(1) {
 		PTask **task;
 		usize taskLen;
 		Ret res = PipeRead(&poller->pip, (void *)&task, &taskLen);
-		assert(taskLen == sizeof(PTask **));
 		(*task)->de(task);
 	}
-	PMutexUnlock(&poller->pipetex);
+	PipeCloseReadEnd(&poller->pip);
+	return;
 }

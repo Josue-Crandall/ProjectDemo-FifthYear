@@ -20,6 +20,7 @@ static Ret NAME##Init(NAME *cvec, size_t cap) {             \
     CHECK(NAME##VecInit(&cvec->vec, cap));                  \
     CHECK(PMutexInit(&cvec->mutex));                        \
     CHECK(PCondInit(&cvec->cond));                          \
+    Arc8Init(&cvec->done, 0);                               \
     return 0;                                               \
                                                             \
 FAILED:                                                     \
@@ -31,7 +32,7 @@ FAILED:                                                     \
 }			                                                \
 static Ret NAME##Push(NAME *  cvec, VAL_T val) {            \
     PMutexLock(&cvec->mutex);                               \
-    if(cvec->done) { goto FAILED; }                         \
+    if(Arc8Read(&cvec->done)) { goto FAILED; }              \
     CHECK(NAME##VecPush(&cvec->vec, val));                  \
                                                             \
     Ret err = 0;                                            \
@@ -48,7 +49,7 @@ static VAL_T NAME##Pop(NAME *cvec) {                        \
                                                             \
     PMutexLock(&cvec->mutex);                               \
     while(1) {                                              \
-        if(cvec->done) { goto FAILED; }                     \
+        if(Arc8Read(&cvec->done)) { goto FAILED; }          \
         if(0 == NAME##VecSize(&cvec->vec)) {                \
             PCondWait(&cvec->cond, &cvec->mutex);           \
         }                                                   \
@@ -67,10 +68,8 @@ FAILED:                                                     \
     goto CLEAN;                                             \
 }	                	                                    \
 static void NAME##Stop(NAME *cvec) {                        \
-    PMutexLock(&cvec->mutex);                               \
-    cvec->done = 1;                                         \
+    Arc8Write(&cvec->done, 1);                              \
     PCondSignal(&cvec->cond, 0);                            \
-    PMutexUnlock(&cvec->mutex);                             \
 }						                                    \
 static void NAME##De(NAME *cvec) {                          \
     NAME##VecDe(&cvec->vec);                                \
