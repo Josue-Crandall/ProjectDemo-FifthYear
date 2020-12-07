@@ -108,8 +108,8 @@ FAILED: ;
 }
 // Note: Signal before letting go of mutex ?
 static void PCondSignal(PCond *cond, Ret broadcast) {
-    if(broadcast) { CHECK(pthread_cond_signal(&cond->cond)); }
-    else { CHECK(pthread_cond_broadcast(&cond->cond)); }
+    if(broadcast) { CHECK(pthread_cond_broadcast(&cond->cond)); }
+    else { CHECK(pthread_cond_signal(&cond->cond)); }
 FAILED: ;
 }
 static void PCondDe(PCond *cond) {
@@ -151,11 +151,15 @@ FAILED:
     return -1;
 }
 static void sigCHLDHandler(int ign) { 
+    int storedErrno = errno;
+    
     ign = ign;
     pid_t res;
 WAIT_PID:
     res = waitpid(-1, NULL, WNOHANG);
     if(res > 0 || (res < 0 && errno == EINTR)) { goto WAIT_PID; }
+
+    errno = storedErrno;
 }
 static pid_t forkedExec(char *file, char **argv, char **envp) {
     CHECK(setSignalHandler(SIGCHLD, sigCHLDHandler));
