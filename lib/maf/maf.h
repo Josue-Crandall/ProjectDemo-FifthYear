@@ -26,8 +26,7 @@ static usize MafLog2OfPow2(usize size) {
     if(!size) { return 0; }
     else { return (usize)__builtin_ctzl(size); }
 }
-static usize MafTwoPowOf(usize size) { 
-    if(!size) { return 0; }
+static usize MafTwoPowOf(usize size) {
     return (usize)1 << size;
 }
 // WARNING: Overflows to 0
