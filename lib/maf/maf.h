@@ -31,7 +31,7 @@ static usize MafTwoPowOf(usize size) {
 }
 // WARNING: Overflows to 0
 static usize MafRoundUpNearest2Pow(usize val) {
-    if(val < 2) { return val; }
+    if(val < 2) { return 1; }
     else { return ((usize)1 << (sizeof(usize) * 8 - 1)) >> ((__builtin_clzl(val - 1)) - 1); }
 }
 
