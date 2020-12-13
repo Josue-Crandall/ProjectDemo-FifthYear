@@ -20,7 +20,8 @@
 #include <sys/random.h>
 #define DEV_URANDOM_MAXYBYTES 256
 
-static void devURandom(void *buf, usize amt) {
+static void devURandom(void *pbuf, usize amt) {
+    u8 *buf = pbuf;
     while(amt > DEV_URANDOM_MAXYBYTES) {
         getrandom(buf, DEV_URANDOM_MAXYBYTES, 0);
         buf += DEV_URANDOM_MAXYBYTES;
