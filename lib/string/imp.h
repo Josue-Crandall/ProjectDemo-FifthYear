@@ -61,6 +61,7 @@ static Ret StrPush(Str *str, const char *const cstr) {
     CHECK(BuffPushArr(str, (u8 *)cstr, cstrLen));
     return 0;
 FAILED:
+    CHECK_IGN(BuffPush(str, '\0'));
     return -1;
 }
 static Ret StrCPush(Str *str, char ch) {
