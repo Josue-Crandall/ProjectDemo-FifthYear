@@ -67,7 +67,7 @@ static void naclHash(u8 dst[NACLH_BYTES], void *const R() src, usize srcLen);
 static void naclRatchet(u8 key[NACLS_KEY_BYTES], u8 sws[NACLH_BYTES]);
 static void naclMix(u8 key[NACLS_KEY_BYTES], u8 secret[NACLS_KEY_BYTES], u8 sws[NACLH_BYTES]);
 // WARNING: Not validated.
-Ret naclEq(u8 *R() lhs, u8 *R() rhs, usize len);
+Ret naclEq(u8 *lhs, u8 *rhs, usize len);
 
 #include "imp.h"
 
