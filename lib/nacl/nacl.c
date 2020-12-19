@@ -18,12 +18,13 @@
 #ifndef LIBSODIUM_IMPLEMENTATION
 
 void randombytes(void * buf, ull bytes) {
+    u8 *iter = buf;
     while(bytes > USIZE_MAX) {
-        devURandom(buf, USIZE_MAX);
-        buf += USIZE_MAX;
+        devURandom(iter, USIZE_MAX);
+        iter += USIZE_MAX;
         bytes -= USIZE_MAX;
     }
-    devURandom(buf, bytes);
+    devURandom(iter, bytes);
 }
 
 #endif
