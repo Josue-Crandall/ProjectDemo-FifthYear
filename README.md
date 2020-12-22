@@ -1,3 +1,5 @@
+Note: ptrdiff_t is not defined for all pointers, reworking code, significant undefined behavior.
+
 # ProjectDemo-FourthYear
 
 <a name="top"></a>
