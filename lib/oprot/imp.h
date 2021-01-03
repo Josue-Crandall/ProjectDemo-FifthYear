@@ -39,7 +39,7 @@ static const u8 OPROT_ZEROS[MAX(OPROT_KEY_CHUNK_SIZE,sizeof(u64))];
         u8 *R() iter = data1;                                                               \
         u8 *R() iterEnd = iter + OPROT_KEY_CHUNK_SIZE;                                      \
         for(NOP; iter != iterEnd; ++iter) {                                                 \
-            u8 mask = 1;                                                                    \
+            *iter = 0; u8 mask = 1;                                                         \
             while(mask) {                                                                   \
                 if(src == srcEnd) { CHECK(fileRead(rngFile, data2, OPROT_KEY_CHUNK_SIZE)); src = data2; }   \
                 switch(*src & 3) {                                                          \
